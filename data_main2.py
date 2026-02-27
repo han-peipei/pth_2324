@@ -27,9 +27,9 @@ def interpolate_to_station(coords, tree, nwp_data):
     return nwp_data[:, idx]  # 获取对应格点数据
 
 # ---------------- 配置区 ----------------
-PY_DIR = os.path.dirname(os.path.abspath(__file__))
-JOB_DIR = os.environ.get("JOB_DIR", PY_DIR)             # bash 所在目录（推荐从 bash 传入）
-BASE_DIR = os.path.abspath(os.path.join(JOB_DIR, "..")) # bash 的上一级目录
+# PY_DIR = os.path.dirname(os.path.abspath(__file__))
+# JOB_DIR = os.environ.get("JOB_DIR", PY_DIR)             # bash 所在目录（推荐从 bash 传入）
+# BASE_DIR = os.path.abspath(os.path.join(JOB_DIR, "..")) # bash 的上一级目录
 # station_id=[54456]
 # time=(datetime.utcnow() + timedelta(hours=8)).strftime("%Y%m%d%H")
 # ROOT  = os.path.join(BASE_DIR, "download_48h","train", f"{station_id[0]}_{time[:-2]}",str(station_id[0]))
@@ -96,11 +96,11 @@ if not stations:
     raise RuntimeError("未在目录中匹配到任何站点文件，请检查ROOT与命名规则/起报时。")
 
 # ---------------- 读取站点经纬高程并生成 coords ----------------
-df = pd.read_csv(csv_path, dtype={'Station_Id_d': str}, low_memory=False)
-df['Station_Id_d'] = df['Station_Id_d'].str.strip().str.upper()
+df = pd.read_csv(csv_path, dtype={'Station_Id_C': str}, low_memory=False)
+df['Station_Id_C'] = df['Station_Id_d'].str.strip().str.upper()
 
-dfu = (df.drop_duplicates('Station_Id_d', keep='last')
-         .set_index('Station_Id_d')[['Lat','Lon','Alti']])
+dfu = (df.drop_duplicates('Station_Id_C', keep='last')
+         .set_index('Station_Id_C')[['Lat','Lon','Alti']])
 
 # 构建查找表
 station_lut = {sid: (float(row['Lat']), float(row['Lon']), float(row['Alti']))
