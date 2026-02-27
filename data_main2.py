@@ -96,11 +96,11 @@ if not stations:
     raise RuntimeError("未在目录中匹配到任何站点文件，请检查ROOT与命名规则/起报时。")
 
 # ---------------- 读取站点经纬高程并生成 coords ----------------
-df = pd.read_csv(csv_path, dtype={'Station_Id_C': str}, low_memory=False)
-df['Station_Id_C'] = df['Station_Id_C'].str.strip().str.upper()
+df = pd.read_csv(csv_path, dtype={'Station_Id_d': str}, low_memory=False)
+df['Station_Id_d'] = df['Station_Id_d'].str.strip().str.upper()
 
-dfu = (df.drop_duplicates('Station_Id_C', keep='last')
-         .set_index('Station_Id_C')[['Lat','Lon','Alti']])
+dfu = (df.drop_duplicates('Station_Id_d', keep='last')
+         .set_index('Station_Id_d')[['Lat','Lon','Alti']])
 
 # 构建查找表
 station_lut = {sid: (float(row['Lat']), float(row['Lon']), float(row['Alti']))
@@ -110,6 +110,7 @@ hist_train, nwp_train, y_train = [], [], []
 spd_train=[]
 # hist_val,   nwp_val,   y_val   = [], [], []
 meta_tr = []
+time_train=[]
 # meta_tr, meta_va = [], []  
 
 Hhist = 24   # 历史窗口长度（上一个24小时）
@@ -141,7 +142,7 @@ for station in stations:
     missing = [v for v in VARS if ("train", station, v) not in data_idx]
     if missing or ("train", station) not in obs_idx:
         continue
-    time=np.load(time_idx[station],allow_pickle=True)
+    time_1 = np.load(time_idx[station], allow_pickle=True)   # 1D: (T,)
     try:
         var_arrs = []
         # Nwin = None
@@ -160,7 +161,7 @@ for station in stations:
         need = Hhist + F
         nwin = (Tlen - need) // S + 1
 
-        H_list, N_list, Y_list , spd_list= [], [], [],[]
+        H_list, N_list, Y_list , spd_list,time_list= [], [], [],[],[]
 ##############################################################################################################################################
         ij = np.load(os.path.join(ROOT, f"nearest_ij_{station}.npy")).astype(int)
         iy, ix = int(ij[0]), int(ij[1])
@@ -177,9 +178,10 @@ for station in stations:
         # t1 = t0 + Hhist
         # t2 = t1 + F
             hist = y_full[t0:t1]  
-            nwp  = X_full[t0:t1]  
+            nwp  = X_full[t1:t2]  
             y    = y_full[t1:t2] 
             spd  =spd_sta[t1:t2]
+            time_2=time_1[t1:t2]
 ###############################################################################################################################################
 ###############################################################################################################################################
  
@@ -187,17 +189,20 @@ for station in stations:
             N_list.append(nwp)
             Y_list.append(y)
             spd_list.append(spd)
+            time_list.append(time_2)
 
         
         H_win = np.stack(H_list, axis=0)  # (nwin, Hhist)
         N_win = np.stack(N_list, axis=0)  # (nwin, F, C, H, W)
         Y_win = np.stack(Y_list, axis=0)  # (nwin, F)
         spd_win = np.stack(spd_list, axis=0)  # (nwin, F)
+        time_win = np.stack(time_1, axis=0)  # (nwin, F)
 
         hist_train.append(H_win)
         nwp_train.append(N_win)
         y_train.append(Y_win)
         spd_train.append(spd_win)
+        time_train.append(time_win)
 
         meta_tr.append((station, nwin)) 
 
@@ -211,6 +216,7 @@ hist_train_all   = np.concatenate(hist_train, axis=0) if hist_train else None
 model_train_all  = np.concatenate(nwp_train,   axis=0) if nwp_train   else None
 obs_train_all    = np.concatenate(y_train,  axis=0) if y_train  else None
 spd_train_all    = np.concatenate(spd_train,  axis=0) if spd_train  else None
+time    = np.concatenate(time_train,  axis=0) if time_train  else None
 
 print("hist_train_all:", None if hist_train_all is None else hist_train_all.shape)
 print("model_train_all:", None if model_train_all is None else model_train_all.shape)
