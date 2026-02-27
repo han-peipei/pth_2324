@@ -47,8 +47,8 @@ _lat_re = re.compile(rf'^lat_({_station_pat})\.npy$')
 _lon_re = re.compile(rf'^lon_({_station_pat})\.npy$')
 # _station_pat = r'(?:[A]\d{4})'
 # _station_pat =['A2662','A3171']
-_data_re  = re.compile(rf'^train_({_var_pat})_({_station_pat})_{TI}\.npy$')
-_obs_re = re.compile(rf'^train_obs_({_station_pat})_{TI}\.npy$')
+_data_re  = re.compile(rf'^train_data_({_var_pat})_({_station_pat})_{TI}\.npy$')
+_obs_re = re.compile(rf'^train_labels_({_station_pat})_{TI}\.npy$')
 _time_re= re.compile(rf'^train_time_({_station_pat})_{TI}\.npy$')  # 可选
 
 data_idx,obs_idx, time_idx,lat_idx,lon_idx = {}, {}, {}, {} ,{} 
