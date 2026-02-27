@@ -97,7 +97,7 @@ if not stations:
 
 # ---------------- 读取站点经纬高程并生成 coords ----------------
 df = pd.read_csv(csv_path, dtype={'Station_Id_C': str}, low_memory=False)
-df['Station_Id_C'] = df['Station_Id_d'].str.strip().str.upper()
+df['Station_Id_C'] = df['Station_Id_C'].str.strip().str.upper()
 
 dfu = (df.drop_duplicates('Station_Id_C', keep='last')
          .set_index('Station_Id_C')[['Lat','Lon','Alti']])
