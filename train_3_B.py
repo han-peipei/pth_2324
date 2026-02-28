@@ -614,6 +614,7 @@ def train_and_evaluate_from_npy(
     
     
     plt.plot(preds[0],label='Pred')
+    plt.plot(trues[0],label='True')
     plt.legend()
     plt.savefig(f"{kaggle_dir}example_direct0.png")
     plt.close()
